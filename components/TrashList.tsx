@@ -23,9 +23,7 @@ const TrashListItem: React.FC<{
   const remainingDays = Math.ceil(retentionDays - (Date.now() - deletedAt) / (1000 * 60 * 60 * 24));
 
   const handleDelete = () => {
-    if (window.confirm('이 메모를 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      onDelete();
-    }
+    onDelete();
   }
 
   return (
