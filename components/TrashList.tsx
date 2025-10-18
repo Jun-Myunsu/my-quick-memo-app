@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Memo } from '../types';
 import { formatDate } from '../utils/dateUtils';
@@ -54,7 +53,9 @@ const TrashListItem: React.FC<{
 };
 
 const TrashList: React.FC<TrashListProps> = ({ memos, onRestore, onDelete, retentionDays }) => {
-  if (memos.length === 0) {
+  const sortedMemos = [...memos].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+
+  if (sortedMemos.length === 0) {
     return (
       <div className="text-center py-20">
         <h2 className="text-xl font-medium text-gray-500 dark:text-gray-400">휴지통이 비어있습니다</h2>
@@ -62,8 +63,6 @@ const TrashList: React.FC<TrashListProps> = ({ memos, onRestore, onDelete, reten
       </div>
     );
   }
-
-  const sortedMemos = [...memos].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
 
   return (
     <ul className="space-y-4">

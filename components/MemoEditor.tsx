@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Memo } from '../types';
-import { BackIcon, TrashIcon, BoldIcon, ItalicIcon, ListOrderedIcon, ListUnorderedIcon } from './icons';
+import { BackIcon, TrashIcon, BoldIcon, ItalicIcon, ListOrderedIcon, ListUnorderedIcon, TextColorIcon, HighlightIcon } from './icons';
 
 interface MemoEditorProps {
   memo: Memo;
   onSave: (id: string, content: string) => void;
-  onDelete: (id: string) => void;
   onBack: () => void;
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved';
 
-const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onDelete, onBack }) => {
+const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onBack }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const saveTimeoutRef = useRef<number | null>(null);
@@ -43,8 +42,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onDelete, onBack 
 
   useEffect(() => {
     if (editorRef.current) {
-      // Set default paragraph separator to <p> to ensure consistent paragraph behavior.
-      document.execCommand('defaultParagraphSeparator', false, 'p');
       editorRef.current.innerHTML = memo.content;
       editorRef.current.focus();
     }
@@ -73,6 +70,18 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onDelete, onBack 
     handleContentChange();
   };
 
+  const applyFontSize = (size: string) => {
+    document.execCommand('fontSize', false, size);
+    editorRef.current?.focus();
+    handleContentChange();
+  };
+  
+  const applyColor = (command: 'foreColor' | 'backColor', color: string) => {
+    document.execCommand(command, false, color);
+    editorRef.current?.focus();
+    handleContentChange();
+  };
+
   const FormatButton: React.FC<{ onClick: () => void, children: React.ReactNode, label: string }> = ({ onClick, children, label }) => (
     <button onClick={onClick} aria-label={label} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
       {children}
@@ -82,10 +91,49 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onDelete, onBack 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
       <div className="flex flex-wrap items-center justify-between gap-y-2 p-2 sm:p-3 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center flex-wrap gap-x-1 sm:gap-x-2">
             <button onClick={onBack} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><BackIcon className="h-5 w-5"/></button>
+            
+            <div className="h-6 border-l border-gray-300 dark:border-gray-600 mx-1"></div>
+
             <FormatButton onClick={() => applyFormat('bold')} label="Bold"><BoldIcon className="h-5 w-5"/></FormatButton>
             <FormatButton onClick={() => applyFormat('italic')} label="Italic"><ItalicIcon className="h-5 w-5"/></FormatButton>
+            
+            <div className="h-6 border-l border-gray-300 dark:border-gray-600 mx-1"></div>
+
+            <select
+                onChange={(e) => applyFontSize(e.target.value)}
+                defaultValue="3"
+                aria-label="Font size"
+                className="text-sm bg-gray-100 dark:bg-gray-700 border-transparent rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                <option value="1">작게</option>
+                <option value="3">보통</option>
+                <option value="5">크게</option>
+                <option value="7">아주 크게</option>
+            </select>
+
+            <div className="relative p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                <TextColorIcon className="h-5 w-5"/>
+                <input
+                    type="color"
+                    onChange={(e) => applyColor('foreColor', e.target.value)}
+                    aria-label="Text color"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+            </div>
+            <div className="relative p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                <HighlightIcon className="h-5 w-5"/>
+                <input
+                    type="color"
+                    onChange={(e) => applyColor('backColor', e.target.value)}
+                    aria-label="Highlight color"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+            </div>
+            
+            <div className="h-6 border-l border-gray-300 dark:border-gray-600 mx-1"></div>
+
             <FormatButton onClick={() => applyFormat('insertUnorderedList')} label="Unordered List"><ListUnorderedIcon className="h-5 w-5"/></FormatButton>
             <FormatButton onClick={() => applyFormat('insertOrderedList')} label="Ordered List"><ListOrderedIcon className="h-5 w-5"/></FormatButton>
         </div>
@@ -94,9 +142,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onSave, onDelete, onBack 
             {saveStatus === 'saving' && '저장 중...'}
             {saveStatus === 'saved' && '저장됨'}
           </span>
-          <button onClick={() => onDelete(memo.id)} className="p-2 rounded-md text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors" aria-label="메모 삭제">
-            <TrashIcon className="h-5 w-5"/>
-          </button>
         </div>
       </div>
       <div

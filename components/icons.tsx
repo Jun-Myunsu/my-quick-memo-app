@@ -96,3 +96,20 @@ export const MascotIcon: React.FC<{ className?: string; isMad?: boolean }> = ({ 
       )}
     </svg>
   );
+
+export const TextColorIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M6.65 16L12 4L17.35 16M16 12H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
+
+export const HighlightIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <path d="m16 5-5.23 5.23a3 3 0 0 0 0 4.24L16 20"/>
+    <path d="m16 5-1.41-1.41a2 2 0 0 0-2.83 0L10.34 5"/>
+    <path d="m13 8 5 5"/>
+    <path d="M4.5 13.5 3 15l6 6 1.5-1.5"/>
+    <path d="m16 5 5.5 5.5"/>
+  </svg>
+);

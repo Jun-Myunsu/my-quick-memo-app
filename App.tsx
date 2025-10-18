@@ -31,7 +31,7 @@ const App: React.FC = () => {
   const handleNewMemo = () => {
     const newMemo: Memo = {
       id: `memo_${Date.now()}`,
-      content: '<p><br></p>',
+      content: '<div><br></div>',
       createdAt: Date.now(),
       updatedAt: Date.now(),
       deletedAt: null,
@@ -113,7 +113,6 @@ const App: React.FC = () => {
             key={currentMemo.id}
             memo={currentMemo}
             onSave={handleSaveMemo}
-            onDelete={handleDeleteMemo}
             onBack={handleBack}
           />
         )}

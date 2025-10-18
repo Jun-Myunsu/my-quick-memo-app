@@ -3,7 +3,7 @@
 
 import { describe, beforeEach, afterEach, test, expect, jest } from '@jest/globals';
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 // Fix: Add import for jest-dom to extend jest matchers and fix TypeScript errors for 'toBeInTheDocument'.
@@ -78,7 +78,7 @@ describe('QuickMemo App Integration Tests', () => {
     expect(screen.queryByText('메모가 없습니다')).not.toBeInTheDocument();
   });
 
-  test('TC-B-01, TC-B-02: should delete a memo and move it to the trash', async () => {
+  test('TC-B-01, TC-B-02: should delete a memo from list view and move it to the trash', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     
     // Setup: Create a memo first
@@ -88,19 +88,25 @@ describe('QuickMemo App Integration Tests', () => {
     
     render(<App />);
 
-    // 1. Select the memo
-    await user.click(screen.getByText('Memo to be deleted'));
-    
-    // 2. Click delete button in editor
-    await user.click(screen.getByLabelText('메모 삭제'));
+    // 1. Find the memo item in the list
+    const memoItem = screen.getByText('Memo to be deleted').closest('li');
+    expect(memoItem).toBeInTheDocument();
 
-    // 3. Check if it's gone from the main list
+    // 2. Hover over the memo item to reveal the delete button
+    await user.hover(memoItem!);
+
+    // 3. Click the delete button that appears on the item
+    const deleteButton = within(memoItem!).getByLabelText('메모를 휴지통으로 이동');
+    await user.click(deleteButton);
+
+    // 4. Check if it's gone from the main list
     expect(screen.getByText('메모가 없습니다')).toBeInTheDocument();
+    expect(screen.queryByText('Memo to be deleted')).not.toBeInTheDocument();
 
-    // 4. Navigate to trash view
-    await user.click(screen.getByText('휴지통'));
+    // 5. Navigate to trash view
+    await user.click(screen.getByRole('button', { name: '휴지통' }));
     
-    // 5. Check if the memo is in the trash
+    // 6. Check if the memo is in the trash
     expect(screen.getByText('Memo to be deleted')).toBeInTheDocument();
     expect(screen.getByText(/D-30/)).toBeInTheDocument();
   });
@@ -116,7 +122,7 @@ describe('QuickMemo App Integration Tests', () => {
     render(<App />);
     
     // 1. Go to trash
-    await user.click(screen.getByText('휴지통'));
+    await user.click(screen.getByRole('button', { name: '휴지통' }));
     expect(screen.getByText('Restore me')).toBeInTheDocument();
     
     // 2. Click restore
@@ -126,7 +132,7 @@ describe('QuickMemo App Integration Tests', () => {
     expect(screen.getByText('휴지통이 비어있습니다')).toBeInTheDocument();
 
     // 4. Go back to memo list
-    await user.click(screen.getByText('메모'));
+    await user.click(screen.getByRole('button', { name: '메모' }));
     
     // 5. Check if memo is restored
     expect(screen.getByText('Restore me')).toBeInTheDocument();
@@ -143,4 +149,18 @@ describe('QuickMemo App Integration Tests', () => {
     render(<App />);
 
     // 1. Go to trash
-    await user.click(screen.getByText('휴지통'));
+    await user.click(screen.getByRole('button', { name: '휴지통' }));
+    expect(screen.getByText('Delete me forever')).toBeInTheDocument();
+
+    // 2. Click the permanent delete button
+    await user.click(screen.getByRole('button', { name: '영구 삭제' }));
+
+    // 3. Confirm the action
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(window.confirm).toHaveBeenCalledWith('이 메모를 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+
+    // 4. Verify the memo is gone and the trash is empty
+    expect(screen.getByText('휴지통이 비어있습니다')).toBeInTheDocument();
+    expect(screen.queryByText('Delete me forever')).not.toBeInTheDocument();
+  });
+});
