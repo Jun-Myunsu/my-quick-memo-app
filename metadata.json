@@ -1,0 +1,5 @@
+{
+  "name": "QuickMemo",
+  "description": "A fast and simple web memo pad that works offline. Create, manage, and securely store multiple notes on a single device without any sign-up, designed for immediate use.",
+  "requestFramePermissions": []
+}
